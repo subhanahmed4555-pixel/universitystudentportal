@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102d53">
+  <title>Student Portal — Campus Demo</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --navy: #102d53;
+      --navy-deep: #0a1d36;
+      --blue: #1769aa;
+      --blue-bright: #2583c7;
+      --ink: #243347;
+      --muted: #66758a;
+      --page: #eef2f6;
+      --surface: #fff;
+      --line: #dce3eb;
+      --soft: #f5f8fb;
+      --good: #16845b;
+      --warning: #a76c0d;
+      --shadow: 0 12px 30px rgba(18, 43, 74, .1);
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 15px;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--page); min-width: 320px; }
+    button, input, select { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button { cursor: pointer; }
+    [hidden] { display: none !important; }
+    .demo-ribbon {
+      position: fixed; z-index: 5; top: 12px; right: -42px; width: 160px; padding: 7px;
+      transform: rotate(35deg); text-align: center; color: #fff; background: #d59a34;
+      box-shadow: 0 3px 10px #07172b33; font-size: 10px; font-weight: 800; letter-spacing: .09em;
+    }
+    .login-view {
+      min-height: 100vh; display: grid; place-items: center; padding: 38px 18px;
+      background-color: #0d2442;
+      background-image: linear-gradient(30deg, #ffffff08 12%, transparent 12.5%, transparent 87%, #ffffff08 87.5%, #ffffff08),
+        linear-gradient(150deg, #ffffff08 12%, transparent 12.5%, transparent 87%, #ffffff08 87.5%, #ffffff08),
+        linear-gradient(30deg, #ffffff08 12%, transparent 12.5%, transparent 87%, #ffffff08 87.5%, #ffffff08),
+        linear-gradient(150deg, #ffffff08 12%, transparent 12.5%, transparent 87%, #ffffff08 87.5%, #ffffff08);
+      background-size: 72px 126px; background-position: 0 0, 0 0, 36px 63px, 36px 63px;
+    }
+    .login-card { width: min(100%, 465px); overflow: hidden; background: #f7f8fa; border-radius: 13px; box-shadow: 0 24px 70px #030d1d80; }
+    .login-head { padding: 26px 25px 23px; background: linear-gradient(120deg, #123861, #0c2545); color: white; text-align: center; }
+    .emblem { width: 57px; height: 57px; margin: 0 auto 12px; display: grid; place-items: center; border: 2px solid #a8d8f3; border-radius: 50%; color: #bde7ff; font-size: 18px; font-weight: 800; letter-spacing: -.08em; }
+    .login-head h1 { font-size: 19px; margin: 0 0 4px; font-weight: 650; }
+    .login-head p { margin: 0; color: #c6d9e9; font-size: 14px; }
+    .portal-label { display: inline-block; margin-top: 15px; padding: 5px 12px; border: 1px solid #78b5dd99; border-radius: 3px; color: #b5e0f8; font-size: 11px; font-weight: 800; letter-spacing: .16em; }
+    .login-content { padding: 24px 28px 27px; }
+    .demo-notice { margin: 0 0 19px; padding: 10px 12px; border: 1px solid #f0dcaa; border-radius: 6px; background: #fff8e7; color: #70520f; font-size: 12px; line-height: 1.5; }
+    .field { display: grid; gap: 6px; margin-bottom: 15px; }
+    .field label { color: #34445a; font-size: 12px; font-weight: 700; }
+    .field input, .field select, .search-input, .edit-grid input {
+      width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid #cbd5df; border-radius: 5px;
+      background: white; color: var(--ink); outline: none;
+    }
+    .field input:focus, .field select:focus, .search-input:focus, .edit-grid input:focus { border-color: var(--blue-bright); box-shadow: 0 0 0 3px #2583c71c; }
+    .roll-row { display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 8px; }
+    .password-wrap { display: flex; }
+    .password-wrap input { border-radius: 5px 0 0 5px; }
+    .password-wrap button { padding: 0 12px; border: 1px solid #cbd5df; border-left: 0; border-radius: 0 5px 5px 0; color: var(--blue); background: white; font-size: 12px; }
+    .captcha { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 3px 0 15px; border: 1px solid #d3dbe4; border-radius: 5px; background: white; color: #46566a; font-size: 12px; }
+    .captcha input { width: 18px; height: 18px; accent-color: var(--blue); }
+    .captcha small { margin-left: auto; color: #77869a; font-size: 10px; }
+    .btn { border: 0; border-radius: 5px; padding: 10px 14px; background: var(--blue); color: white; font-weight: 650; transition: background .15s, transform .15s; }
+    .btn:hover { background: #0c568e; transform: translateY(-1px); }
+    .btn.primary { width: 100%; padding: 12px; border-radius: 7px; background: var(--navy); }
+    .btn.primary:hover { background: #184a7d; }
+    .btn.secondary { background: #e8eff6; color: var(--navy); border: 1px solid #cbd9e7; }
+    .btn.secondary:hover { background: #dbe8f4; }
+    .btn.danger { background: #a83939; }
+    .btn.small { padding: 7px 10px; font-size: 12px; }
+    .hybrid-btn { display: block; margin: 11px auto 0; padding: 7px 12px; border: 1px solid #c7d2df; border-radius: 16px; background: transparent; color: #506176; font-size: 11px; }
+    .login-message { min-height: 18px; margin: 10px 0 0; color: #a52f2f; font-size: 12px; }
+    .credentials { margin-top: 9px; color: #66758a; text-align: center; font-size: 11px; line-height: 1.5; }
+    .app-shell { min-height: 100vh; display: flex; }
+    .sidebar { position: fixed; z-index: 10; inset: 0 auto 0 0; width: 248px; display: flex; flex-direction: column; background: var(--navy); color: #e5f0fb; transition: transform .2s; }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 21px 18px; border-bottom: 1px solid #ffffff1b; }
+    .brand .emblem { width: 43px; height: 43px; margin: 0; flex: 0 0 auto; font-size: 14px; }
+    .brand strong { display: block; font-size: 13px; line-height: 1.35; }
+    .brand small { display: block; margin-top: 2px; color: #abc5df; font-size: 10px; }
+    .student-mini { padding: 17px 19px 14px; border-bottom: 1px solid #ffffff1b; }
+    .student-mini strong { display: block; font-size: 14px; }
+    .student-mini small { display: block; margin-top: 5px; color: #b7cde2; font-size: 11px; }
+    .side-nav { padding: 10px 9px; overflow-y: auto; flex: 1; }
+    .side-nav button { width: 100%; display: flex; align-items: center; gap: 11px; padding: 10px 11px; border: 0; border-radius: 5px; background: transparent; color: #d7e5f2; text-align: left; font-size: 13px; }
+    .side-nav button:hover, .side-nav button.active { background: #ffffff19; color: #fff; }
+    .side-nav button.active { box-shadow: inset 3px 0 #58b6ed; }
+    .nav-icon { width: 19px; text-align: center; color: #a9d7f4; font-size: 15px; }
+    .sidebar-foot { padding: 12px 18px; border-top: 1px solid #ffffff1b; color: #9bb6d0; font-size: 10px; line-height: 1.5; }
+    .main-wrap { width: calc(100% - 248px); min-height: 100vh; margin-left: 248px; }
+    .topbar { position: sticky; z-index: 4; top: 0; height: 62px; display: flex; align-items: center; gap: 14px; padding: 0 26px; border-bottom: 1px solid var(--line); background: var(--surface); }
+    .topbar h1 { margin: 0; color: var(--navy); font-size: 18px; font-weight: 700; }
+    .topbar .spacer { flex: 1; }
+    .top-link { border: 0; background: transparent; color: var(--blue); font-size: 12px; font-weight: 600; }
+    .menu-toggle { display: none; border: 0; background: transparent; color: var(--navy); font-size: 22px; }
+    .content { max-width: 1440px; margin: 0 auto; padding: 23px 26px 40px; }
+    .crumb { margin: 0 0 18px; color: var(--muted); font-size: 11px; }
+    .crumb span { color: var(--blue); }
+    .grid { display: grid; gap: 17px; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 7px; box-shadow: 0 3px 12px #142f4b08; overflow: hidden; }
+    .card-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 17px; border-bottom: 1px solid var(--line); }
+    .card-head h2, .card-head h3 { margin: 0; color: var(--navy); font-size: 14px; }
+    .card-body { padding: 16px 17px; }
+    .profile-top { display: flex; align-items: center; gap: 16px; }
+    .avatar { width: 60px; height: 60px; display: grid; place-items: center; border-radius: 50%; background: #e1eff9; color: var(--blue); font-size: 21px; font-weight: 800; }
+    .profile-top h2 { margin: 0 0 5px; color: var(--navy); font-size: 17px; }
+    .profile-top p { margin: 0; color: var(--muted); font-size: 12px; }
+    .stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin: 17px 0; }
+    .stat { padding: 13px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+    .stat small { display: block; color: var(--muted); font-size: 11px; }
+    .stat strong { display: block; margin-top: 6px; color: var(--navy); font-size: 20px; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { padding: 10px 11px; border: 1px solid var(--line); text-align: left; vertical-align: middle; }
+    th { background: #edf3f8; color: #314965; font-weight: 700; white-space: nowrap; }
+    tbody tr:nth-child(even) { background: var(--soft); }
+    .muted { color: var(--muted); }
+    .notice { padding: 10px 12px; margin: 0 0 15px; border: 1px solid #c6ddf0; border-radius: 5px; background: #edf7ff; color: #2d5879; font-size: 12px; line-height: 1.5; }
+    .notice.warning { border-color: #f0dcaa; background: #fff8e7; color: #70520f; }
+    .badge { display: inline-block; padding: 4px 7px; border-radius: 12px; background: #e3f4ed; color: #16704c; font-size: 10px; font-weight: 700; }
+    .badge.blue { background: #e5f1fb; color: #1b639b; }
+    .badge.gold { background: #fff1d6; color: #85600c; }
+    .toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+    .toolbar .search-input { max-width: 290px; min-height: 37px; }
+    .toolbar select { min-height: 37px; padding: 7px 10px; border: 1px solid #cbd5df; border-radius: 5px; background: var(--surface); color: var(--ink); }
+    .progress { height: 8px; min-width: 85px; overflow: hidden; border-radius: 8px; background: #e4eaf0; }
+    .progress span { height: 100%; display: block; border-radius: inherit; background: #2783bc; }
+    .course-list { display: grid; gap: 11px; }
+    .course-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 13px; border: 1px solid var(--line); border-radius: 6px; }
+    .course-row strong { display: block; color: var(--navy); font-size: 13px; }
+    .course-row small { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; }
+    .info-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0; margin: 0; }
+    .info-list div { padding: 10px 8px; border-bottom: 1px solid var(--line); }
+    .info-list dt { color: var(--muted); font-size: 10px; }
+    .info-list dd { margin: 4px 0 0; color: var(--ink); font-size: 12px; font-weight: 600; }
+    .action-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .notification { display: flex; justify-content: space-between; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--line); }
+    .notification:last-child { border-bottom: 0; }
+    .notification strong { display: block; font-size: 13px; }
+    .notification p { margin: 5px 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .notification small { color: var(--muted); font-size: 10px; }
+    .notification.unread strong:before { content: ""; display: inline-block; width: 7px; height: 7px; margin: 0 7px 1px 0; border-radius: 50%; background: #2384c4; }
+    .edit-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 13px; }
+    .edit-grid label { display: grid; gap: 5px; color: #34445a; font-size: 11px; font-weight: 700; }
+    .theme-options { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    .theme-dark { color-scheme: dark; --ink: #e0e7ef; --muted: #a9b8c8; --page: #101a27; --surface: #192637; --line: #334457; --soft: #202f41; --navy: #8dcaf2; --blue: #69b3e2; }
+    .theme-dark .topbar, .theme-dark .card, .theme-dark .stat, .theme-dark .field input, .theme-dark .field select, .theme-dark .search-input, .theme-dark .edit-grid input, .theme-dark .toolbar select { background: var(--surface); }
+    .theme-dark th { background: #273a50; color: #d7e9f7; }
+    .theme-dark tbody tr:nth-child(even) { background: var(--soft); }
+    .theme-dark .notice { background: #203c50; color: #c7e4fa; border-color: #385d76; }
+    .theme-dark .notice.warning { background: #463b26; color: #f3d99f; }
+    .theme-dark .btn.secondary { background: #2b4056; color: #e2f0fb; border-color: #40576f; }
+    .mobile-overlay { display: none; }
+    .empty-state { padding: 25px; color: var(--muted); text-align: center; font-size: 13px; }
+    .footer-note { margin-top: 24px; color: var(--muted); text-align: center; font-size: 10px; }
+    @media (max-width: 900px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); box-shadow: 10px 0 25px #07172b44; }
+      .main-wrap { width: 100%; margin-left: 0; }
+      .menu-toggle { display: inline-block; }
+      .mobile-overlay.open { position: fixed; z-index: 8; inset: 0; display: block; background: #07172b77; }
+    }
+    @media (max-width: 650px) {
+      .content { padding: 17px 13px 30px; }
+      .topbar { height: 56px; padding: 0 13px; }
+      .topbar h1 { font-size: 16px; }
+      .top-link { font-size: 11px; }
+      .grid.two, .grid.three { grid-template-columns: 1fr; }
+      .stat-grid { grid-template-columns: repeat(2,1fr); }
+      .info-list, .edit-grid { grid-template-columns: 1fr; }
+      .login-content { padding: 20px 18px 23px; }
+      .roll-row { gap: 6px; }
+      .roll-row input { padding: 8px 6px; font-size: 12px; }
+      .course-row { align-items: flex-start; }
+      .demo-ribbon { top: 7px; right: -51px; }
+    }
+    @media print {
+      body { background: white !important; color: #111 !important; }
+      .sidebar, .topbar, .demo-ribbon, .crumb, .no-print, .footer-note { display: none !important; }
+      .main-wrap { width: 100%; margin: 0; }
+      .content { padding: 0; max-width: none; }
+      .card { box-shadow: none; border: 1px solid #777; break-inside: avoid; }
+      .print-target { display: block !important; }
+      .printing #pageContent > :not(.print-target) { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-ribbon">DEMO PORTAL</div>
+  <main id="loginView" class="login-view">
+    <section class="login-card" aria-labelledby="loginTitle">
+      <header class="login-head">
+        <div class="emblem" aria-hidden="true">CU</div>
+        <h1 id="loginTitle">COMSATS University Islamabad</h1>
+        <p>Abbottabad Campus</p>
+        <div class="portal-label">STUDENT PORTAL</div>
+      </header>
+      <div class="login-content">
+        <p class="demo-notice"><strong>Student portfolio demo.</strong> This is an unofficial local demonstration. Do not enter a real university password or personal account details.</p>
+        <form id="loginForm" novalidate>
+          <div class="field">
+            <label for="semester">Semester / Session</label>
+            <select id="semester" required>
+              <option value="Fall 2026">Fall 2026 · Current</option><option value="Spring 2026">Spring 2026</option><option value="Fall 2025">Fall 2025</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Student roll number</label>
+            <div class="roll-row">
+              <input id="rollPart1" aria-label="Roll number prefix" value="DEMO" autocomplete="off">
+              <input id="rollPart2" aria-label="Roll number session" value="SP26" autocomplete="off">
+              <input id="rollPart3" aria-label="Roll number number" value="BCS-042" autocomplete="username">
+            </div>
+          </div>
+          <div class="field">
+            <label for="program">Program</label>
+            <select id="program"><option>BS Computer Science (BCS)</option><option>BS Software Engineering (BSE)</option><option>BS Electrical Engineering (BEE)</option></select>
+          </div>
+          <div class="field">
+            <label for="password">Demo password</label>
+            <div class="password-wrap"><input id="password" type="password" value="demo123" autocomplete="current-password"><button id="showPassword" type="button" aria-label="Show password">Show</button></div>
+          </div>
+          <label class="captcha"><input id="captcha" type="checkbox"><span>I'm ready to enter the demo portal</span><small>Local demo check</small></label>
+          <button class="btn primary" type="submit">Sign In</button>
+          <button class="hybrid-btn" id="hybridButton" type="button">Only for Hybrid Courses</button>
+          <p id="loginMessage" class="login-message" role="status" aria-live="polite"></p>
+          <p class="credentials"><strong>Demo credentials:</strong> DEMO / SP26 / BCS-042 · Password: <strong>demo123</strong><br>Credentials are fictional and are not transmitted or saved.</p>
+        </form>
+      </div>
+    </section>
+  </main>
+  <div id="mobileOverlay" class="mobile-overlay"></div>
+  <div id="appView" class="app-shell" hidden>
+    <aside id="sidebar" class="sidebar" aria-label="Main navigation">
+      <div class="brand"><div class="emblem" aria-hidden="true">CU</div><div><strong>COMSATS University</strong><small>Abbottabad Campus · Demo</small></div></div>
+      <div class="student-mini"><strong id="sidebarName">Ali Hassan</strong><small id="sidebarRoll">DEMO/SP26/BCS-042</small></div>
+      <nav id="sideNav" class="side-nav"></nav>
+      <div class="sidebar-foot">Unofficial student portfolio demo<br>Fictional data · No university services connected</div>
+    </aside>
+    <div class="main-wrap">
+      <header class="topbar">
+        <button id="menuToggle" class="menu-toggle" aria-label="Open navigation" aria-expanded="false">☰</button>
+        <h1 id="pageTitle">Dashboard</h1>
+        <span class="spacer"></span>
+        <button class="top-link" data-route="notifications">Notifications <span id="unreadCount"></span></button>
+        <button class="top-link" data-route="help">Help / Manual</button>
+        <button class="top-link" data-route="logout">Sign Out</button>
+      </header>
+      <main id="pageContent" class="content" tabindex="-1"></main>
+    </div>
+  </div>
+  <script>
+    "use strict";
+    const DEMO_ROLL = "DEMO/SP26/BCS-042";
+    const originalProfile = {
+      name: "Ali Hassan", father: "Muhammad Hassan", roll: DEMO_ROLL,
+      program: "BS Computer Science (BCS)", section: "A", semester: "4",
+      registered: "6", totalCourses: "24", advisor: "Demo Faculty Advisor",
+      dob: "2004-04-18", thesis: "Not Applicable", email: "ali.hassan@example.test"
+    };
+    const courses = [
+      { code: "CSC210", name: "Data Structures", credits: 3, instructor: "Dr. Sana Ahmed", attendance: 88, room: "Lab 2", time: "Monday · 09:00–10:30", description: "Core data structures, algorithm analysis, and practical implementation." },
+      { code: "CSC232", name: "Database Systems", credits: 3, instructor: "Mr. Omar Shah", attendance: 82, room: "B-12", time: "Tuesday · 10:30–12:00", description: "Relational database design, SQL concepts, and transaction fundamentals." },
+      { code: "CSC262", name: "Computer Networks", credits: 3, instructor: "Dr. Hira Khan", attendance: 91, room: "A-08", time: "Wednesday · 09:00–10:30", description: "An introduction to network architecture, protocols, and communication." },
+      { code: "CSC275", name: "Software Engineering", credits: 3, instructor: "Ms. Nadia Iqbal", attendance: 78, room: "C-14", time: "Thursday · 11:00–12:30", description: "Software development lifecycle, requirements, testing, and team practices." },
+      { code: "MTH105", name: "Linear Algebra", credits: 3, instructor: "Dr. Bilal Raza", attendance: 86, room: "B-05", time: "Friday · 09:00–10:30", description: "Vectors, matrices, linear transformations, and their applications." },
+      { code: "HUM120", name: "Communication Skills", credits: 2, instructor: "Ms. Ayesha Noor", attendance: 94, room: "C-02", time: "Monday · 13:00–14:00", description: "Academic and professional communication, presentations, and writing." }
+    ];
+    const academicSemesters = [
+      {
+        number: 1, label: "Semester 1 — SP25 (Spring 2025)", status: "Completed",
+        courses: [
+          { code: "CSC101", name: "Programming Fundamentals", credits: 3, totalMarks: 100, obtainedMarks: 84 },
+          { code: "CSC102", name: "Introduction to Computing", credits: 3, totalMarks: 100, obtainedMarks: 78 },
+          { code: "MTH101", name: "Calculus I", credits: 3, totalMarks: 100, obtainedMarks: 73 },
+          { code: "PHY101", name: "Applied Physics", credits: 3, totalMarks: 100, obtainedMarks: 81 },
+          { code: "ENG101", name: "English Composition", credits: 2, totalMarks: 100, obtainedMarks: 89 },
+          { code: "HUM101", name: "Pakistan Studies", credits: 2, totalMarks: 100, obtainedMarks: 76 }
+        ]
+      },
+      {
+        number: 2, label: "Semester 2 — FA25 (Fall 2025)", status: "Completed",
+        courses: [
+          { code: "CSC120", name: "Object-Oriented Programming", credits: 3, totalMarks: 100, obtainedMarks: 88 },
+          { code: "CSC130", name: "Discrete Structures", credits: 3, totalMarks: 100, obtainedMarks: 79 },
+          { code: "CSC140", name: "Digital Logic Design", credits: 3, totalMarks: 100, obtainedMarks: 82 },
+          { code: "CSC150", name: "Computer Organization", credits: 3, totalMarks: 100, obtainedMarks: 75 },
+          { code: "MTH110", name: "Calculus II", credits: 3, totalMarks: 100, obtainedMarks: 91 },
+          { code: "ENG120", name: "Technical Writing", credits: 2, totalMarks: 100, obtainedMarks: 85 }
+        ]
+      },
+      {
+        number: 3, label: "Semester 3 — SP26 (Spring 2026)", status: "Completed",
+        courses: [
+          { code: "CSC201", name: "Algorithms", credits: 3, totalMarks: 100, obtainedMarks: 86 },
+          { code: "CSC205", name: "Probability and Statistics", credits: 3, totalMarks: 100, obtainedMarks: 81 },
+          { code: "CSC215", name: "Operating Systems", credits: 3, totalMarks: 100, obtainedMarks: 90 },
+          { code: "CSC220", name: "Theory of Computation", credits: 3, totalMarks: 100, obtainedMarks: 77 },
+          { code: "MTH210", name: "Numerical Methods", credits: 3, totalMarks: 100, obtainedMarks: 72 },
+          { code: "HUM210", name: "Professional Ethics", credits: 2, totalMarks: 100, obtainedMarks: 88 }
+        ]
+      },
+      {
+        number: 4, label: "Semester 4 — FA26 (Fall 2026)", status: "Current / In Progress",
+        courses: [
+          { code: "CSC210", name: "Data Structures", credits: 3, totalMarks: 100 },
+          { code: "CSC232", name: "Database Systems", credits: 3, totalMarks: 100 },
+          { code: "CSC262", name: "Computer Networks", credits: 3, totalMarks: 100 },
+          { code: "CSC275", name: "Software Engineering", credits: 3, totalMarks: 100 },
+          { code: "MTH105", name: "Linear Algebra", credits: 3, totalMarks: 100 },
+          { code: "HUM120", name: "Communication Skills", credits: 2, totalMarks: 100 }
+        ]
+      }
+    ];
+    const demoExams = [
+      { code: "CSC210", name: "Data Structures", date: "2026-11-09", start: "09:00 AM", end: "12:00 PM", room: "Exam Hall A-12" },
+      { code: "CSC232", name: "Database Systems", date: "2026-11-13", start: "02:00 PM", end: "05:00 PM", room: "Exam Hall B-04" },
+      { code: "CSC262", name: "Computer Networks", date: "2026-11-18", start: "09:00 AM", end: "12:00 PM", room: "Block C · Room 21" },
+      { code: "CSC275", name: "Software Engineering", date: "2026-11-23", start: "02:00 PM", end: "05:00 PM", room: "Exam Hall A-08" },
+      { code: "MTH105", name: "Linear Algebra", date: "2026-11-27", start: "09:00 AM", end: "12:00 PM", room: "Block B · Room 16" },
+      { code: "HUM120", name: "Communication Skills", date: "2026-12-02", start: "02:00 PM", end: "05:00 PM", room: "Exam Hall C-03" }
+    ];
+    const navItems = [
+      ["dashboard", "Dashboard", "⌂"], ["ecard", "Student E-Card", "▣"], ["courses", "Courses", "▤"],
+      ["course-portal", "Course Portal", "▱"], ["exam-coupon", "Exam Entry Coupon", "▧"], ["timetable", "Time Table", "▦"],
+      ["datesheet", "Date Sheet", "▣"], ["attendance", "Attendance", "◷"], ["results", "Results", "✓"],
+      ["fees", "Fee Details", "＄"], ["notifications", "Notifications", "♢"], ["profile", "Profile", "♙"],
+      ["settings", "Settings", "⚙"], ["logout", "Logout", "↪"]
+    ];
+    let profile = loadProfile();
+    let notifications = loadNotifications();
+    let currentRoute = "dashboard";
+    let selectedCourse = null;
+    let fontScale = Number(sessionStorage.getItem("sisFontScale") || 15);
+
+    function loadProfile() {
+      try {
+        const saved = JSON.parse(localStorage.getItem("sisDemoProfile") || "{}");
+        if (saved.roll === DEMO_ROLL && saved.name === originalProfile.name && ["3", "4"].includes(saved.semester)) saved.semester = originalProfile.semester;
+        return { ...originalProfile, ...saved };
+      }
+      catch (error) { console.error("Could not load the local demo profile.", error); return { ...originalProfile }; }
+    }
+    function loadNotifications() {
+      try {
+        const saved = JSON.parse(localStorage.getItem("sisDemoNotifications") || "null");
+        return Array.isArray(saved) ? saved : [
+          { id: 1, title: "Spring 2026 registration confirmed", text: "Your fictional demo course registration is complete.", date: "18 Feb 2026", read: false },
+          { id: 2, title: "Midterm schedule available", text: "A sample exam schedule is available in the Date Sheet section.", date: "15 Feb 2026", read: false },
+          { id: 3, title: "Library orientation", text: "Demo announcement: library orientation will be held next week.", date: "10 Feb 2026", read: true }
+        ];
+      } catch (error) { console.error("Could not load demo notifications.", error); return []; }
+    }
+    function saveProfile() {
+      try { localStorage.setItem("sisDemoProfile", JSON.stringify(profile)); }
+      catch (error) { showToast("Profile could not be saved in this browser."); console.error(error); }
+    }
+    function saveNotifications() {
+      try { localStorage.setItem("sisDemoNotifications", JSON.stringify(notifications)); }
+      catch (error) { showToast("Notifications could not be saved in this browser."); console.error(error); }
+    }
+    function esc(value) {
+      return String(value).replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+    }
+    function setRoute(route) {
+      if (route === "logout") { logout(); return; }
+      if (!navItems.some(item => item[0] === route) && route !== "help") route = "dashboard";
+      currentRoute = route;
+      if (route !== "course-portal") selectedCourse = null;
+      document.getElementById("pageTitle").textContent = route === "help" ? "Help / User Manual" : (navItems.find(item => item[0] === route) || [null, "Dashboard"])[1];
+      document.querySelectorAll("#sideNav button").forEach(button => button.classList.toggle("active", button.dataset.route === route));
+      renderPage();
+      closeMobileNav();
+      document.getElementById("pageContent").focus({ preventScroll: true });
+    }
+    function renderNav() {
+      document.getElementById("sideNav").innerHTML = navItems.map(([key, label, icon]) =>
+        `<button type="button" data-route="${key}" class="${currentRoute === key ? "active" : ""}"><span class="nav-icon" aria-hidden="true">${icon}</span>${label}</button>`
+      ).join("");
+      document.getElementById("sidebarName").textContent = profile.name;
+      document.getElementById("sidebarRoll").textContent = profile.roll;
+      updateUnread();
+    }
+    function updateUnread() {
+      const count = notifications.filter(item => !item.read).length;
+      document.getElementById("unreadCount").textContent = count ? `(${count})` : "";
+    }
+    function card(title, body, extra = "") {
+      return `<section class="card ${extra}"><header class="card-head"><h2>${title}</h2></header><div class="card-body">${body}</div></section>`;
+    }
+    function profileSummary() {
+      return `<section class="card"><div class="card-body profile-top"><div class="avatar" aria-hidden="true">${esc(profile.name.split(" ").map(part => part[0]).join("").slice(0, 2))}</div><div><h2>Welcome, ${esc(profile.name)}</h2><p>${esc(profile.program)} · Semester ${esc(profile.semester)} · Section ${esc(profile.section)}</p><p>${esc(profile.roll)}</p></div><span class="spacer"></span><span class="badge">Demo Student</span></div></section>`;
+    }
+    function profileTable() {
+      const rows = [["Student Name", profile.name], ["Father Name", profile.father], ["Roll No", profile.roll], ["Program", profile.program], ["Current Section", profile.section], ["Current Semester", profile.semester], ["Registered Courses", profile.registered], ["Total Registered Courses", profile.totalCourses], ["Current Advisor", profile.advisor], ["Date of Birth", profile.dob], ["Thesis Title", profile.thesis], ["Email", profile.email]];
+      return `<div class="table-wrap"><table><tbody>${rows.map(([label, value]) => `<tr><th>${label}</th><td>${esc(value)}</td></tr>`).join("")}</tbody></table></div>`;
+    }
+    function courseTable(data = courses) {
+      if (!data.length) return `<div class="empty-state">No courses match your search. Try another keyword or filter.</div>`;
+      return `<div class="table-wrap"><table><thead><tr><th>Course Code</th><th>Course Name</th><th>Credit Hours</th><th>Instructor</th></tr></thead><tbody>${data.map(c => `<tr><td><strong>${c.code}</strong></td><td>${c.name}</td><td>${c.credits}</td><td>${c.instructor}</td></tr>`).join("")}</tbody></table></div>`;
+    }
+    function attendanceTable() {
+      return `<div class="table-wrap"><table><thead><tr><th>Course</th><th>Attendance</th><th>Progress</th><th>Status</th></tr></thead><tbody>${courses.map(c => `<tr><td>${c.code} · ${c.name}</td><td>${c.attendance}%</td><td><div class="progress" aria-label="${c.attendance}% attendance"><span style="width:${c.attendance}%"></span></div></td><td><span class="badge ${c.attendance < 80 ? "gold" : ""}">${c.attendance < 80 ? "Review" : "Satisfactory"}</span></td></tr>`).join("")}</tbody></table></div>`;
+    }
+    function notificationList() {
+      if (!notifications.length) return `<div class="empty-state">There are no demo notifications.</div>`;
+      return notifications.map(n => `<article class="notification ${n.read ? "" : "unread"}"><div><strong>${esc(n.title)}</strong><p>${esc(n.text)}</p><small>${esc(n.date)} · ${n.read ? "Read" : "Unread"}</small></div><button class="btn secondary small" data-action="read-notification" data-id="${n.id}">${n.read ? "Read" : "Mark read"}</button></article>`).join("");
+    }
+    function gradeForPercentage(percentage) {
+      if (percentage >= 90) return { letter: "A", points: 4 };
+      if (percentage >= 85) return { letter: "A-", points: 3.67 };
+      if (percentage >= 80) return { letter: "B+", points: 3.33 };
+      if (percentage >= 75) return { letter: "B", points: 3 };
+      if (percentage >= 70) return { letter: "B-", points: 2.67 };
+      if (percentage >= 65) return { letter: "C+", points: 2.33 };
+      if (percentage >= 60) return { letter: "C", points: 2 };
+      if (percentage >= 55) return { letter: "C-", points: 1.67 };
+      if (percentage >= 50) return { letter: "D", points: 1 };
+      return { letter: "F", points: 0 };
+    }
+    function semesterMetrics(semester) {
+      const courseResults = semester.courses.map(course => {
+        const percentage = course.totalMarks ? (course.obtainedMarks / course.totalMarks) * 100 : 0;
+        return { ...course, percentage, ...gradeForPercentage(percentage) };
+      });
+      const credits = courseResults.reduce((sum, course) => sum + course.credits, 0);
+      const qualityPoints = courseResults.reduce((sum, course) => sum + course.credits * course.points, 0);
+      return { courses: courseResults, credits, gpa: credits ? qualityPoints / credits : 0 };
+    }
+    function cumulativeGpaThrough(semesterIndex) {
+      const completed = academicSemesters.slice(0, semesterIndex + 1).filter(semester => semester.status === "Completed");
+      let totalCredits = 0, qualityPoints = 0;
+      completed.forEach(semester => {
+        const metrics = semesterMetrics(semester);
+        totalCredits += metrics.credits;
+        qualityPoints += metrics.gpa * metrics.credits;
+      });
+      return totalCredits ? qualityPoints / totalCredits : 0;
+    }
+    function formatGpa(value) { return value.toFixed(2); }
+    function examDate(exam) { return new Date(`${exam.date}T00:00:00`); }
+    function examStatus(exam) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return examDate(exam) < today ? "Completed" : "Upcoming";
+    }
+    function sortedExams() {
+      return [...demoExams].sort((first, second) => examDate(first) - examDate(second));
+    }
+    function formatExamDate(exam) {
+      return examDate(exam).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+    }
+    function formatExamDay(exam) {
+      return examDate(exam).toLocaleDateString("en-GB", { weekday: "long" });
+    }
+    function dashboardPage() {
+      const overall = Math.round(courses.reduce((sum, c) => sum + c.attendance, 0) / courses.length);
+      const completedSemesters = academicSemesters.map((semester, index) => ({ semester, index })).filter(item => item.semester.status === "Completed");
+      const previousCompleted = completedSemesters[completedSemesters.length - 1];
+      const previousSemester = previousCompleted.semester;
+      const previousMetrics = semesterMetrics(previousSemester);
+      const currentIndex = academicSemesters.findIndex(semester => semester.status !== "Completed");
+      const currentSemester = academicSemesters[currentIndex];
+      const nextExams = sortedExams().filter(exam => examStatus(exam) === "Upcoming").slice(0, 3);
+      const examRows = nextExams.length
+        ? `<div class="table-wrap"><table><thead><tr><th>Course</th><th>Date</th><th>Day</th><th>Time</th><th>Room</th></tr></thead><tbody>${nextExams.map(exam => `<tr><td>${exam.code} · ${exam.name}</td><td>${formatExamDate(exam)}</td><td>${formatExamDay(exam)}</td><td>${exam.start}–${exam.end}</td><td>${exam.room}</td></tr>`).join("")}</tbody></table></div>`
+        : `<div class="empty-state">No upcoming demo examinations.</div>`;
+      return `${profileSummary()}<div class="stat-grid"><div class="stat"><small>Current Semester</small><strong>${esc(currentSemester.label.split("—")[1].trim())}</strong></div><div class="stat"><small>Enrolled Courses</small><strong>${courses.length}</strong></div><div class="stat"><small>Overall Attendance</small><strong>${overall}%</strong></div><div class="stat"><small>Fee Balance</small><strong>Rs. 18,500</strong></div><div class="stat"><small>Previous Semester GPA</small><strong>${formatGpa(previousMetrics.gpa)}</strong></div><div class="stat"><small>Cumulative CGPA</small><strong>${formatGpa(cumulativeGpaThrough(previousCompleted.index))}</strong></div></div>
+        <div class="grid two">${card("Registered Courses", courseTable(courses.slice(0, 4)))}${card("Latest Notifications", notificationList().split("</article>").slice(0, 2).map(x => x ? `${x}</article>` : "").join("") || `<div class="empty-state">No notifications</div>`)}
+        ${card("Upcoming Examinations", examRows)}
+        ${card("Quick Actions", `<div class="action-row"><button class="btn small" data-route="ecard">View E-Card</button><button class="btn small" data-route="timetable">View Time Table</button><button class="btn small" data-route="attendance">Check Attendance</button><button class="btn secondary small" data-route="fees">Fee Details</button><button class="btn small" data-route="results">Complete Results History</button><button class="btn secondary small" data-route="datesheet">Upcoming Date Sheet</button></div>`)}</div><p class="footer-note">All records and amounts shown are fictional sample data for a local portfolio demo.</p>`;
+    }
+    function ecardPage() {
+      return `<div id="printArea" class="card print-target"><header class="card-head"><h2>COMSATS University Islamabad · Abbottabad Campus</h2><span class="badge blue">DEMO E-CARD</span></header><div class="card-body"><div class="profile-top"><div class="avatar">${esc(profile.name.split(" ").map(x => x[0]).join(""))}</div><div><h2>${esc(profile.name)}</h2><p>Student E-Card · Fictional Sample</p></div></div><dl class="info-list" style="margin-top:16px"><div><dt>Roll Number</dt><dd>${esc(profile.roll)}</dd></div><div><dt>Program</dt><dd>${esc(profile.program)}</dd></div><div><dt>Semester</dt><dd>${esc(profile.semester)}</dd></div><div><dt>Section</dt><dd>${esc(profile.section)}</dd></div></dl><p class="notice warning" style="margin-top:16px">This demonstration card is not an official university ID and cannot be used for identification or access.</p></div></div><div class="action-row no-print"><button class="btn" data-action="print">Print E-Card</button><button class="btn secondary" data-route="dashboard">Back to Dashboard</button></div>`;
+    }
+    function coursesPage() {
+      return `<div class="card"><header class="card-head"><h2>Registered Courses</h2><span class="badge blue">Fall 2026 Demo</span></header><div class="card-body"><div class="toolbar"><input id="courseSearch" class="search-input" type="search" placeholder="Search by code, course or instructor" aria-label="Search courses"><select id="creditFilter" aria-label="Filter courses by credit hours"><option value="">All credit hours</option><option value="2">2 credits</option><option value="3">3 credits</option></select><span id="courseCount" class="muted">${courses.length} courses</span></div><div id="courseResults">${courseTable()}</div></div></div>`;
+    }
+    function coursePortalPage() {
+      if (selectedCourse) {
+        const c = courses.find(item => item.code === selectedCourse);
+        if (!c) { selectedCourse = null; return coursePortalPage(); }
+        return `<div class="card"><header class="card-head"><h2>${c.code} · ${c.name}</h2><span class="badge blue">Course Detail</span></header><div class="card-body"><p>${c.description}</p><dl class="info-list"><div><dt>Instructor</dt><dd>${c.instructor}</dd></div><div><dt>Credits</dt><dd>${c.credits}</dd></div><div><dt>Class time</dt><dd>${c.time}</dd></div><div><dt>Room</dt><dd>${c.room}</dd></div></dl><h3>Sample resources</h3><ul><li>Week 1 · Course overview (demo resource)</li><li>Week 2 · Lecture notes summary (demo resource)</li><li>Practice activity · Self-study exercise</li></ul><p class="notice">These links and resources are examples only. No private course system is connected.</p><button class="btn secondary" data-action="back-courses">Back to Course Portal</button></div></div>`;
+      }
+      return `<div class="notice">Course details and resources below are local examples. They do not connect to a private learning management system.</div><div class="course-list">${courses.map(c => `<article class="course-row"><div><strong>${c.code} · ${c.name}</strong><small>${c.credits} credit hours · ${c.instructor}</small></div><button class="btn small" data-action="view-course" data-code="${c.code}">View Course</button></article>`).join("")}</div>`;
+    }
+    function examCouponPage() {
+      return `<div id="printArea" class="card print-target"><header class="card-head"><h2>Examination Entry Coupon</h2><span class="badge gold">SAMPLE ONLY</span></header><div class="card-body"><p class="notice warning"><strong>Demo document:</strong> This coupon is fictional and is not valid for university entry, examination, or identity verification.</p><dl class="info-list"><div><dt>Student</dt><dd>${esc(profile.name)}</dd></div><div><dt>Roll No</dt><dd>${esc(profile.roll)}</dd></div><div><dt>Program / Semester</dt><dd>${esc(profile.program)} · ${esc(profile.semester)}</dd></div><div><dt>Eligibility</dt><dd>Eligible · Demo status only</dd></div><div><dt>Sample Examination</dt><dd>CSC210 · Data Structures</dd></div><div><dt>Date / Room</dt><dd>12 May 2026 · Hall A</dd></div></dl></div></div><div class="action-row no-print"><button class="btn" data-action="print">Print Demo Coupon</button><button class="btn secondary" data-route="dashboard">Back to Dashboard</button></div>`;
+    }
+    function timetablePage() {
+      const rows = [
+        ["Monday", "09:00–10:30", "CSC210 · Data Structures", "Lab 2"], ["Monday", "13:00–14:00", "HUM120 · Communication Skills", "C-02"],
+        ["Tuesday", "10:30–12:00", "CSC232 · Database Systems", "B-12"], ["Wednesday", "09:00–10:30", "CSC262 · Computer Networks", "A-08"],
+        ["Thursday", "11:00–12:30", "CSC275 · Software Engineering", "C-14"], ["Friday", "09:00–10:30", "MTH105 · Linear Algebra", "B-05"]
+      ];
+      return `<div class="notice">Illustrative weekly timetable for the fictional Fall 2026 student.</div><div class="card"><header class="card-head"><h2>Weekly Time Table</h2></header><div class="card-body table-wrap"><table><thead><tr><th>Day</th><th>Time</th><th>Course</th><th>Room</th></tr></thead><tbody>${rows.map(r => `<tr>${r.map(x => `<td>${x}</td>`).join("")}</tr>`).join("")}</tbody></table></div></div>`;
+    }
+    function datesheetPage() {
+      const exams = sortedExams();
+      return `<div class="print-target"><div class="notice warning"><strong>Demo Schedule:</strong> Fictional Fall 2026 examination dates and venues. This is not an official COMSATS date sheet.</div><div class="card"><header class="card-head"><h2>Fall 2026 · Demo Schedule</h2><span class="badge blue">Fictional sample</span></header><div class="card-body"><div class="toolbar no-print"><label for="examStatusFilter">Show exams</label><select id="examStatusFilter" aria-label="Filter exams by status"><option value="all">All exams</option><option value="Upcoming">Upcoming</option><option value="Completed">Completed</option></select><span class="muted">Sorted by examination date</span></div><div id="examResults">${examTable(exams)}</div></div></div></div><div class="action-row no-print"><button class="btn" data-action="print">Print Date Sheet</button><button class="btn secondary" data-route="dashboard">Back to Dashboard</button></div>`;
+    }
+    function examTable(exams) {
+      if (!exams.length) return `<div class="empty-state">No examinations match this status filter.</div>`;
+      return `<div class="table-wrap"><table><thead><tr><th>Course Code</th><th>Course Name</th><th>Examination Date</th><th>Day</th><th>Time</th><th>Room</th><th>Status</th></tr></thead><tbody>${exams.map(exam => {
+        const status = examStatus(exam);
+        return `<tr><td><strong>${exam.code}</strong></td><td>${exam.name}</td><td>${formatExamDate(exam)}</td><td>${formatExamDay(exam)}</td><td>${exam.start}–${exam.end}</td><td>${exam.room}</td><td><span class="badge ${status === "Completed" ? "" : "blue"}">${status}</span></td></tr>`;
+      }).join("")}</tbody></table></div>`;
+    }
+    function attendancePage() {
+      const overall = Math.round(courses.reduce((sum, c) => sum + c.attendance, 0) / courses.length);
+      return `<div class="notice">Attendance percentages are fictional sample data and are not connected to university records.</div><div class="stat-grid"><div class="stat"><small>Overall Attendance</small><strong>${overall}%</strong></div><div class="stat"><small>Courses Tracked</small><strong>${courses.length}</strong></div><div class="stat"><small>Above 80%</small><strong>${courses.filter(c => c.attendance >= 80).length}</strong></div><div class="stat"><small>Below 80%</small><strong>${courses.filter(c => c.attendance < 80).length}</strong></div></div>${card("Course Attendance", attendanceTable())}`;
+    }
+    function resultsPage() {
+      const currentIndex = academicSemesters.findIndex(semester => semester.status !== "Completed");
+      const semesterOptions = academicSemesters.map((semester, index) => `<option value="${index}" ${index === currentIndex ? "selected" : ""}>${semester.label}${semester.status === "Completed" ? "" : " · Current / In Progress"}</option>`).join("");
+      return `<div class="print-target"><div class="notice warning">All results are fictional demonstration data, not official university records. FA26 (Fall 2026) is in progress and examination results have not been announced.</div><div class="toolbar no-print"><label for="resultSemester">Semester</label><select id="resultSemester" aria-label="Filter academic results by semester">${semesterOptions}</select><button class="btn small" data-action="print">Print Results</button></div><div id="resultsContent">${resultsSemesterView(currentIndex)}</div></div>`;
+    }
+    function resultsSemesterView(semesterIndex, searchQuery = "") {
+      const semester = academicSemesters[semesterIndex];
+      if (!semester) return `<div class="empty-state">Select a semester to view its demo results.</div>`;
+      const completed = semester.status === "Completed";
+      const metrics = completed ? semesterMetrics(semester) : { courses: semester.courses, credits: semester.courses.reduce((sum, course) => sum + course.credits, 0), gpa: 0 };
+      const cumulative = completed ? cumulativeGpaThrough(semesterIndex) : cumulativeGpaThrough(semesterIndex - 1);
+      const query = searchQuery.trim().toLowerCase();
+      const visibleCourses = metrics.courses.filter(course => `${course.code} ${course.name}`.toLowerCase().includes(query));
+      const table = visibleCourses.length
+        ? `<div class="table-wrap"><table><thead><tr><th>Course Code</th><th>Course Title</th><th>Credit Hours</th><th>Total Marks</th><th>Obtained Marks</th><th>Percentage</th><th>Letter Grade</th><th>Grade Points</th><th>Result Status</th></tr></thead><tbody>${visibleCourses.map(course => {
+          if (!completed) return `<tr><td><strong>${course.code}</strong></td><td>${course.name}</td><td>${course.credits}</td><td>${course.totalMarks}</td><td>—</td><td>—</td><td>—</td><td>—</td><td><span class="badge gold">In Progress</span></td></tr>`;
+          const status = course.percentage >= 50 ? "Passed" : "Failed";
+          return `<tr><td><strong>${course.code}</strong></td><td>${course.name}</td><td>${course.credits}</td><td>${course.totalMarks}</td><td>${course.obtainedMarks}</td><td>${course.percentage.toFixed(2)}%</td><td>${course.letter}</td><td>${course.points.toFixed(2)}</td><td><span class="badge ${status === "Passed" ? "" : "gold"}">${status}</span></td></tr>`;
+        }).join("")}</tbody></table></div>`
+        : `<div class="empty-state">No courses match your search. Try a different course code or title.</div>`;
+      const statusText = completed ? "Completed" : "In Progress";
+      const message = completed ? "" : `<p class="notice">This semester is currently in progress. Examination results have not been announced.</p>`;
+      return `${message}<div class="stat-grid"><div class="stat"><small>Selected Semester</small><strong>${esc(semester.label.split("—")[1].trim())}</strong></div><div class="stat"><small>Semester Status</small><strong>${statusText}</strong></div><div class="stat"><small>Semester GPA</small><strong>${completed ? formatGpa(metrics.gpa) : "0.0"}</strong></div><div class="stat"><small>Cumulative CGPA</small><strong>${formatGpa(cumulative)}</strong></div></div><div class="card"><header class="card-head"><h2>${esc(semester.label)} · ${completed ? "Demo Results" : "Current Courses"}</h2><span class="badge ${completed ? "" : "gold"}">${statusText}</span></header><div class="card-body"><div class="toolbar no-print"><label for="resultCourseSearch">Search courses</label><input id="resultCourseSearch" class="search-input" type="search" placeholder="Search by course code or title" aria-label="Search result courses" value="${esc(searchQuery)}"><span class="muted">${visibleCourses.length} of ${metrics.courses.length} courses</span></div>${table}<p class="muted">${completed ? `Semester GPA: ${formatGpa(metrics.gpa)} · Cumulative CGPA: ${formatGpa(cumulative)} · GPA is credit-hour weighted.` : "Semester GPA: 0.0 · Current-semester courses are excluded from the cumulative CGPA until results are published."}</p></div></div>`;
+    }
+    function feesPage() {
+      const fee = 142000, paid = 123500, balance = fee - paid;
+      return `<div class="notice warning">All amounts are fictional examples in PKR. No payment service is connected and no payments can be made here.</div><div class="stat-grid"><div class="stat"><small>Demo Semester Fee</small><strong>Rs. ${fee.toLocaleString()}</strong></div><div class="stat"><small>Paid (Sample)</small><strong>Rs. ${paid.toLocaleString()}</strong></div><div class="stat"><small>Outstanding Balance</small><strong>Rs. ${balance.toLocaleString()}</strong></div><div class="stat"><small>Status</small><strong>Demo</strong></div></div><div class="grid two">${card("Fee Summary", `<dl class="info-list"><div><dt>Tuition and services</dt><dd>Rs. 132,000</dd></div><div><dt>Lab and activity charges</dt><dd>Rs. 10,000</dd></div><div><dt>Total sample fee</dt><dd>Rs. ${fee.toLocaleString()}</dd></div><div><dt>Outstanding (calculated)</dt><dd>Rs. ${balance.toLocaleString()}</dd></div></dl>`)}${card("Demo Payment History", `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Status</th></tr></thead><tbody><tr><td>05 Feb 2026</td><td>Sample installment 1</td><td>Rs. 75,000</td><td>Recorded demo</td></tr><tr><td>20 Feb 2026</td><td>Sample installment 2</td><td>Rs. 48,500</td><td>Recorded demo</td></tr></tbody></table></div>`)}</div>`;
+    }
+    function notificationsPage() {
+      return `<div class="notice">Announcements are sample content for the local demo portal.</div><div class="card"><header class="card-head"><h2>Notifications</h2><button class="btn danger small" data-action="clear-notifications">Clear Demo Notifications</button></header><div class="card-body">${notificationList()}</div></div>`;
+    }
+    function profilePage() {
+      const fields = [["name", "Student Name"], ["father", "Father Name"], ["roll", "Roll Number"], ["program", "Program"], ["section", "Section"], ["semester", "Current Semester"], ["advisor", "Advisor"], ["dob", "Date of Birth"], ["email", "Demo Email"]];
+      return `<div class="notice">Changes are saved only in this browser's local storage. Do not enter sensitive or real student information.</div><div class="card"><header class="card-head"><h2>Fictional Student Profile</h2></header><div class="card-body"><form id="profileForm"><div class="edit-grid">${fields.map(([key, label]) => `<label>${label}<input name="${key}" value="${esc(profile[key] || "")}" ${["name","roll","program","section","semester"].includes(key) ? "required" : ""} ${key === "dob" ? 'type="date"' : ""}></label>`).join("")}<label>Thesis Title<input name="thesis" value="${esc(profile.thesis)}"></label></div><div class="action-row"><button class="btn" type="submit">Save Profile</button><button class="btn danger" type="button" data-action="reset-profile">Reset Demo Data</button></div><p id="profileMessage" class="muted" role="status"></p></form></div></div>`;
+    }
+    function settingsPage() {
+      const isDark = document.body.classList.contains("theme-dark");
+      return `<div class="grid two">${card("Appearance", `<p>Choose a comfortable display theme. Your selection applies to this demo session.</p><div class="theme-options"><button class="btn ${isDark ? "secondary" : ""}" data-action="toggle-theme" aria-pressed="${!isDark}">☀ Light Theme</button><button class="btn ${isDark ? "" : "secondary"}" data-action="toggle-theme" aria-pressed="${isDark}">☾ Dark Theme</button></div><div class="field" style="margin-top:17px;max-width:310px"><label for="fontSize">Text size (<span id="fontValue">${fontScale}</span>px)</label><input id="fontSize" type="range" min="14" max="18" value="${fontScale}"></div><button class="btn secondary small" data-action="reset-theme">Reset to Default Theme</button>`)}${card("Demo Settings", `<p>Settings affect only this browser view. Authentication, payment, email, and university services are not connected.</p><dl class="info-list"><div><dt>Portal status</dt><dd>Local demo</dd></div><div><dt>External services</dt><dd>None connected</dd></div></dl>`)}</div>`;
+    }
+    function helpPage() {
+      return `<div class="grid two">${card("Using this demo portal", `<ol><li>Use the displayed fictional credentials on the login screen.</li><li>Choose a section from the left navigation to explore sample content.</li><li>Update fictional profile fields from the Profile page; changes stay in this browser.</li><li>Use the Settings page to switch theme or adjust text size.</li><li>Sign out to return to the demo login screen.</li></ol>`)}${card("Demo limitations", `<p>This portfolio is a static, frontend-only illustration. It does not authenticate against COMSATS, access student records, submit payments, or contact university services.</p><p>Use only the provided fictional credentials. Browser storage is used only for demo profile and notification preferences.</p>`)}</div><div class="action-row"><button class="btn secondary" data-route="dashboard">Back to Dashboard</button></div>`;
+    }
+    function renderPage() {
+      const pages = {
+        dashboard: dashboardPage, ecard: ecardPage, courses: coursesPage, "course-portal": coursePortalPage,
+        "exam-coupon": examCouponPage, timetable: timetablePage, datesheet: datesheetPage, attendance: attendancePage,
+        results: resultsPage, fees: feesPage, notifications: notificationsPage, profile: profilePage, settings: settingsPage, help: helpPage
+      };
+      document.getElementById("pageContent").innerHTML = (pages[currentRoute] || dashboardPage)();
+      document.documentElement.style.fontSize = `${fontScale}px`;
+      updateUnread();
+    }
+    function login(event) {
+      event.preventDefault();
+      const roll = ["rollPart1", "rollPart2", "rollPart3"].map(id => document.getElementById(id).value.trim()).join("/");
+      const password = document.getElementById("password").value;
+      const message = document.getElementById("loginMessage");
+      if (!document.getElementById("captcha").checked) { message.textContent = "Please check the local demo verification box."; return; }
+      if (roll.toUpperCase() !== DEMO_ROLL || password !== "demo123") { message.textContent = "Those demo credentials don't match. Use the credentials shown below."; return; }
+      if (document.getElementById("program").value !== originalProfile.program) { message.textContent = "Select the demo student's program (BS Computer Science)."; return; }
+      sessionStorage.setItem("sisDemoSignedIn", "yes");
+      document.getElementById("loginView").hidden = true;
+      document.getElementById("appView").hidden = false;
+      renderNav();
+      setRoute("dashboard");
+    }
+    function logout() {
+      sessionStorage.removeItem("sisDemoSignedIn");
+      document.getElementById("appView").hidden = true;
+      document.getElementById("loginView").hidden = false;
+      document.getElementById("loginMessage").textContent = "";
+      document.getElementById("password").value = "";
+      document.getElementById("captcha").checked = false;
+    }
+    function showToast(message) {
+      let toast = document.getElementById("toast");
+      if (!toast) { toast = document.createElement("div"); toast.id = "toast"; toast.setAttribute("role", "status"); toast.style.cssText = "position:fixed;z-index:20;right:18px;bottom:18px;max-width:340px;padding:12px 16px;border-radius:6px;background:#102d53;color:white;box-shadow:0 5px 18px #0003;font-size:13px"; document.body.appendChild(toast); }
+      toast.textContent = message;
+      toast.hidden = false;
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => { toast.hidden = true; }, 3000);
+    }
+    function closeMobileNav() {
+      document.getElementById("sidebar").classList.remove("open");
+      document.getElementById("mobileOverlay").classList.remove("open");
+      document.getElementById("menuToggle").setAttribute("aria-expanded", "false");
+    }
+    document.getElementById("loginForm").addEventListener("submit", login);
+    document.getElementById("showPassword").addEventListener("click", event => {
+      const input = document.getElementById("password");
+      const visible = input.type === "password";
+      input.type = visible ? "text" : "password";
+      event.currentTarget.textContent = visible ? "Hide" : "Show";
+      event.currentTarget.setAttribute("aria-label", visible ? "Hide password" : "Show password");
+    });
+    document.getElementById("hybridButton").addEventListener("click", () => showToast("Hybrid course services are not part of this local demonstration."));
+    document.getElementById("sideNav").addEventListener("click", event => {
+      const button = event.target.closest("[data-route]");
+      if (button) setRoute(button.dataset.route);
+    });
+    document.getElementById("pageContent").addEventListener("click", event => {
+      const routeButton = event.target.closest("[data-route]");
+      if (routeButton) { setRoute(routeButton.dataset.route); return; }
+      const action = event.target.closest("[data-action]");
+      if (!action) return;
+      switch (action.dataset.action) {
+        case "print":
+          document.body.classList.add("printing");
+          try { window.print(); }
+          finally { document.body.classList.remove("printing"); }
+          break;
+        case "view-course": selectedCourse = action.dataset.code; renderPage(); break;
+        case "back-courses": selectedCourse = null; renderPage(); break;
+        case "read-notification": {
+          const item = notifications.find(n => String(n.id) === action.dataset.id);
+          if (item) { item.read = true; saveNotifications(); renderPage(); }
+          break;
+        }
+        case "clear-notifications":
+          if (window.confirm("Clear all fictional demo notifications?")) { notifications = []; saveNotifications(); renderPage(); }
+          break;
+        case "reset-profile":
+          if (window.confirm("Reset the fictional profile to its original demo values?")) {
+            profile = { ...originalProfile }; localStorage.removeItem("sisDemoProfile"); renderNav(); renderPage();
+          }
+          break;
+        case "toggle-theme":
+          document.body.classList.toggle("theme-dark", action.textContent.includes("Dark"));
+          renderPage();
+          break;
+        case "reset-theme":
+          document.body.classList.remove("theme-dark"); fontScale = 15; sessionStorage.removeItem("sisFontScale"); renderPage(); break;
+      }
+    });
+    document.getElementById("pageContent").addEventListener("submit", event => {
+      if (event.target.id !== "profileForm") return;
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      const updated = { ...profile };
+      for (const [key, value] of formData.entries()) updated[key] = String(value).trim();
+      if (!updated.name || !updated.roll || !updated.program || !updated.section || !updated.semester) {
+        document.getElementById("profileMessage").textContent = "Please complete all required fields."; return;
+      }
+      profile = updated; saveProfile(); renderNav(); renderPage(); showToast("Fictional demo profile saved in this browser.");
+    });
+    document.getElementById("pageContent").addEventListener("input", event => {
+      if (event.target.id === "resultCourseSearch") {
+        const query = event.target.value;
+        const selectionStart = event.target.selectionStart;
+        const semesterIndex = Number(document.getElementById("resultSemester").value);
+        document.getElementById("resultsContent").innerHTML = resultsSemesterView(semesterIndex, query);
+        const searchInput = document.getElementById("resultCourseSearch");
+        searchInput.focus();
+        searchInput.setSelectionRange(selectionStart, selectionStart);
+      }
+      if (event.target.id === "courseSearch" || event.target.id === "creditFilter") {
+        const query = document.getElementById("courseSearch").value.trim().toLowerCase();
+        const credit = document.getElementById("creditFilter").value;
+        const filtered = courses.filter(c => (!credit || String(c.credits) === credit) && `${c.code} ${c.name} ${c.instructor}`.toLowerCase().includes(query));
+        document.getElementById("courseResults").innerHTML = courseTable(filtered);
+        document.getElementById("courseCount").textContent = `${filtered.length} ${filtered.length === 1 ? "course" : "courses"}`;
+      }
+      if (event.target.id === "fontSize") {
+        fontScale = Number(event.target.value);
+        document.documentElement.style.fontSize = `${fontScale}px`;
+        document.getElementById("fontValue").textContent = fontScale;
+        sessionStorage.setItem("sisFontScale", String(fontScale));
+      }
+    });
+    document.getElementById("pageContent").addEventListener("change", event => {
+      if (event.target.id === "resultSemester") {
+        document.getElementById("resultsContent").innerHTML = resultsSemesterView(Number(event.target.value));
+      }
+      if (event.target.id === "examStatusFilter") {
+        const status = event.target.value;
+        const filtered = sortedExams().filter(exam => status === "all" || examStatus(exam) === status);
+        document.getElementById("examResults").innerHTML = examTable(filtered);
+      }
+    });
+    document.querySelector(".topbar").addEventListener("click", event => {
+      const button = event.target.closest("[data-route]");
+      if (button) setRoute(button.dataset.route);
+    });
+    document.getElementById("menuToggle").addEventListener("click", () => {
+      const open = document.getElementById("sidebar").classList.toggle("open");
+      document.getElementById("mobileOverlay").classList.toggle("open", open);
+      document.getElementById("menuToggle").setAttribute("aria-expanded", String(open));
+    });
+    document.getElementById("mobileOverlay").addEventListener("click", closeMobileNav);
+    document.addEventListener("keydown", event => { if (event.key === "Escape") closeMobileNav(); });
+    if (sessionStorage.getItem("sisDemoSignedIn") === "yes") {
+      document.getElementById("loginView").hidden = true;
+      document.getElementById("appView").hidden = false;
+      renderNav();
+      setRoute("dashboard");
+    }
+  </script>
+</body>
+</html>
